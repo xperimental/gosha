@@ -1,27 +1,19 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
-	"github.com/xperimental/gosha/internal/config"
-	"io"
 	"log"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/xperimental/gosha/internal/config"
+	"github.com/xperimental/gosha/internal/digest"
 )
 
 const (
 	megaBytes = 1024 * 1024
 )
-
-type result struct {
-	Filename string
-	Hash     string
-	Size     int64
-	Duration time.Duration
-	Error    error
-}
 
 func main() {
 	log.SetFlags(0)
@@ -33,7 +25,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	fileCh := make(chan string, len(cfg.FileNames))
-	resCh := make(chan result, len(cfg.FileNames))
+	resCh := make(chan digest.Result, len(cfg.FileNames))
 
 	for _, fileName := range cfg.FileNames {
 		info, err := os.Stat(fileName)
@@ -52,7 +44,7 @@ func main() {
 
 	workers := min(cfg.Workers, len(cfg.FileNames))
 	for i := 0; i < workers; i++ {
-		worker(wg, resCh, fileCh)
+		digest.Worker(wg, resCh, fileCh)
 	}
 
 	wg.Wait()
@@ -72,43 +64,4 @@ func main() {
 	}
 
 	fmt.Printf("Total Bytes: %d Duration: %s Speed: %.2fMB/s\n", totalBytes, totalDuration.Round(time.Second), (float64(totalBytes)/megaBytes)/float64(totalDuration.Seconds()))
-}
-
-func worker(wg *sync.WaitGroup, resCh chan<- result, fileCh <-chan string) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for fileName := range fileCh {
-			start := time.Now()
-			log.Printf("Processing file %s", fileName)
-			hash, bytes, err := hashFile(fileName)
-			duration := time.Since(start)
-
-			resCh <- result{
-				Filename: fileName,
-				Hash:     hash,
-				Size:     bytes,
-				Duration: duration,
-				Error:    err,
-			}
-		}
-	}()
-}
-
-func hashFile(fileName string) (string, int64, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return "", 0, fmt.Errorf("can not open file: %w", err)
-	}
-	defer file.Close()
-
-	hash := sha256.New()
-	bytes, err := io.Copy(hash, file)
-	if err != nil {
-		return "", 0, fmt.Errorf("error while hashing file: %w", err)
-	}
-	log.Printf("file: %s size: %d bytes", fileName, bytes)
-
-	return fmt.Sprintf("%x", hash.Sum(nil)), bytes, nil
 }
