@@ -41,9 +41,10 @@ const (
 )
 
 type Config struct {
-	Workers   int
-	FileNames []string
-	Algorithm Algorithm
+	Workers    int
+	FileNames  []string
+	Algorithm  Algorithm
+	BinaryMode bool
 }
 
 func Parse(cmd string, args []string) (*Config, error) {
@@ -52,6 +53,7 @@ func Parse(cmd string, args []string) (*Config, error) {
 	flags := pflag.NewFlagSet(cmd, pflag.ContinueOnError)
 	flags.IntVarP(&cfg.Workers, "workers", "w", cfg.Workers, "number of worker threads")
 	flags.VarP(&cfg.Algorithm, "algorithm", "a", "hashing algorithm")
+	flags.BoolVarP(&cfg.BinaryMode, "binary", "b", cfg.BinaryMode, "read in binary mode")
 
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		return nil, fmt.Errorf("error parsing flags: %w", err)

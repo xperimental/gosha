@@ -55,6 +55,11 @@ func main() {
 	wg.Wait()
 	close(resCh)
 
+	binaryMark := " "
+	if cfg.BinaryMode {
+		binaryMark = "*"
+	}
+
 	totalBytes := int64(0)
 	totalDuration := time.Duration(0)
 	for res := range resCh {
@@ -65,7 +70,7 @@ func main() {
 		totalBytes += res.Size
 		totalDuration += res.Duration
 
-		fmt.Printf("%s *%s\n", res.Hash, res.Filename)
+		fmt.Printf("%s %s%s\n", res.Hash, binaryMark, res.Filename)
 	}
 
 	fmt.Printf("Total Bytes: %d Duration: %s Speed: %.2fMB/s\n", totalBytes, totalDuration.Round(time.Second), (float64(totalBytes)/megaBytes)/float64(totalDuration.Seconds()))
