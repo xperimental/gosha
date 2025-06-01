@@ -73,5 +73,5 @@ func main() {
 		fmt.Printf("%s %s%s\n", res.Hash, binaryMark, res.Filename)
 	}
 
-	fmt.Printf("Total Bytes: %d Duration: %s Speed: %.2fMB/s\n", totalBytes, totalDuration.Round(time.Second), (float64(totalBytes)/megaBytes)/float64(totalDuration.Seconds()))
+	log.Printf("Total Bytes: %d Duration: %s Speed: %.2fMB/s\n", totalBytes, totalDuration.Round(time.Second), (float64(totalBytes)/megaBytes)/float64(totalDuration.Seconds()))
 }
