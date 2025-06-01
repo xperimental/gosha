@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/pflag"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -60,7 +59,7 @@ func Parse(cmd string, args []string) (*Config, error) {
 
 	fileNames := flags.Args()
 	if len(args) < 1 {
-		log.Fatalf("Usage: %s file [file ...]", os.Args[0])
+		fileNames = []string{"-"}
 	}
 	cfg.FileNames = fileNames
 

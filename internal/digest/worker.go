@@ -58,11 +58,17 @@ func createDigest(algorithm config.Algorithm) hash.Hash {
 }
 
 func hashFile(fileName string, algorithm config.Algorithm) (string, int64, error) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		return "", 0, fmt.Errorf("can not open file: %w", err)
+	var file io.ReadCloser
+	if fileName == "-" {
+		file = os.Stdin
+	} else {
+		var err error
+		file, err = os.Open(fileName)
+		if err != nil {
+			return "", 0, fmt.Errorf("can not open file: %w", err)
+		}
+		defer file.Close()
 	}
-	defer file.Close()
 
 	hash := createDigest(algorithm)
 	if hash == nil {

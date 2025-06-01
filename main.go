@@ -28,6 +28,11 @@ func main() {
 	resCh := make(chan digest.Result, len(cfg.FileNames))
 
 	for _, fileName := range cfg.FileNames {
+		if fileName == "-" {
+			fileCh <- fileName
+			continue
+		}
+
 		info, err := os.Stat(fileName)
 		if err != nil {
 			log.Fatalf("can not stat file: %s", err)
