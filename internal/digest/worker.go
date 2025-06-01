@@ -50,6 +50,8 @@ func createDigest(algorithm config.Algorithm) hash.Hash {
 		return sha1.New()
 	case config.AlgorithmSha256:
 		return sha256.New()
+	case config.AlgorithmSha384:
+		return sha512.New384()
 	case config.AlgorithmSha512:
 		return sha512.New()
 	}

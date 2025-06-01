@@ -20,6 +20,8 @@ func (a *Algorithm) Set(val string) error {
 		*a = AlgorithmSha1
 	case "256":
 		*a = AlgorithmSha256
+	case "384":
+		*a = AlgorithmSha384
 	case "512":
 		*a = AlgorithmSha512
 	default:
