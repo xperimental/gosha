@@ -44,7 +44,7 @@ func main() {
 
 	workers := min(cfg.Workers, len(cfg.FileNames))
 	for i := 0; i < workers; i++ {
-		digest.Worker(wg, resCh, fileCh)
+		digest.Worker(wg, resCh, fileCh, cfg.Algorithm)
 	}
 
 	wg.Wait()
