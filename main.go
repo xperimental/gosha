@@ -3,22 +3,16 @@ package main
 import (
 	"crypto/sha256"
 	"fmt"
+	"github.com/xperimental/gosha/internal/config"
 	"io"
 	"log"
 	"os"
-	"runtime"
 	"sync"
 	"time"
-
-	"github.com/spf13/pflag"
 )
 
 const (
 	megaBytes = 1024 * 1024
-)
-
-var (
-	numWorkers = runtime.NumCPU()
 )
 
 type result struct {
@@ -32,22 +26,16 @@ type result struct {
 func main() {
 	log.SetFlags(0)
 
-	flags := pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
-	flags.IntP("workers", "w", numWorkers, "number of worker threads")
-	if err := flags.Parse(os.Args[1:]); err != nil {
-		log.Fatalf("error parsing flags: %s", err)
-	}
-
-	args := flags.Args()
-	if len(args) < 1 {
-		log.Fatalf("Usage: %s file [file ...]", os.Args[0])
+	cfg, err := config.Parse(os.Args[0], os.Args[1:])
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	wg := &sync.WaitGroup{}
-	fileCh := make(chan string, len(args))
-	resCh := make(chan result, len(args))
+	fileCh := make(chan string, len(cfg.FileNames))
+	resCh := make(chan result, len(cfg.FileNames))
 
-	for _, fileName := range args {
+	for _, fileName := range cfg.FileNames {
 		info, err := os.Stat(fileName)
 		if err != nil {
 			log.Fatalf("can not stat file: %s", err)
@@ -62,7 +50,8 @@ func main() {
 	}
 	close(fileCh)
 
-	for i := 0; i < numWorkers; i++ {
+	workers := min(cfg.Workers, len(cfg.FileNames))
+	for i := 0; i < workers; i++ {
 		worker(wg, resCh, fileCh)
 	}
 
